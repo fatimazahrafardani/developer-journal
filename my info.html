@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Notes - Developer Journal</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-image: url("https://source.unsplash.com/1920x1080/?workspace,desk");
+        background-size: cover;
+        background-attachment: fixed;
+        color: #333;
+        line-height: 1.6;
+        transition: background-color 0.3s, color 0.3s;
+      }
+
+      header {
+        background-color: rgba(0, 0, 0, 0.8);
+        color: #ffe4e9;
+        padding: 1rem 0;
+        text-align: center;
+        border-bottom: 2px solid #ffbcd1;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 1.5rem;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid #ffd6e2;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        transition: background 0.3s, border 0.3s;
+      }
+
+      h2 {
+        color: #ff5c8d;
+        margin-top: 0;
+      }
+
+      input[type="text"],
+      textarea {
+        width: 100%;
+        padding: 0.5rem;
+        margin-top: 1rem;
+        border: 1px solid #ffd6e2;
+        border-radius: 5px;
+        background: #fff5f8;
+        font-size: 1rem;
+        transition: background 0.3s;
+      }
+
+      button {
+        background-color: #ff8fb1;
+        color: white;
+        border: none;
+        padding: 0.7rem 1.2rem;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1rem;
+        margin-top: 0.8rem;
+      }
+
+      button:hover {
+        background-color: #ff5c8d;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1.5rem;
+      }
+
+      table th,
+      table td {
+        border: 1px solid #ffd6e2;
+        padding: 0.8rem;
+        text-align: left;
+        background: #fff5f8;
+      }
+
+      table th {
+        background: #ff8fb1;
+        color: white;
+      }
+
+      table td {
+        vertical-align: top;
+      }
+
+      .delete-button {
+        background-color: #ff5c8d;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      .delete-button:hover {
+        background-color: #26030c;
+      }
+      .modify-button {
+        background-color: #ff5c8d;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      .modify-button:hover {
+        background-color: #26030c;
+      }
+
+      footer {
+        text-align: center;
+        margin-top: 2rem;
+        color: #fff;
+        background: rgba(0, 0, 0, 0.8);
+        padding: 1rem 0;
+        font-size: 0.9rem;
+      }
+
+      /* Dark Mode Styles */
+      body.dark-mode {
+        background-color: #121212;
+        color: #e0e0e0;
+      }
+
+      body.dark-mode header {
+        background-color: rgba(0, 0, 0, 0.8);
+        color: #ffe4e9;
+      }
+
+      body.dark-mode .container {
+        background: rgba(33, 33, 33, 0.95);
+        border: 1px solid #555;
+      }
+
+      body.dark-mode input[type="text"],
+      body.dark-mode textarea {
+        background: #333;
+        border: 1px solid #555;
+        color: #e0e0e0;
+      }
+
+      body.dark-mode button {
+        background-color: #ff8fb1;
+        color: white;
+      }
+
+      body.dark-mode table th,
+      body.dark-mode table td {
+        background: #333;
+        border-color: #555;
+      }
+
+      body.dark-mode footer {
+        background-color: #222;
+        color: #ccc;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>My Notes - Developer Journal</h1>
+      <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
+    </header>
+    <div class="container">
+      <h2>Add a New Note</h2>
+      <input
+        type="text"
+        id="note-title"
+        placeholder="Title (e.g., Vue.js Lesson)"
+      />
+      <textarea
+        id="note-input"
+        placeholder="Add details about your note..."
+      ></textarea>
+      <button onclick="addNote()">Add Note</button>
+
+      <h2>Saved Notes</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Details</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="notes">
+          <!-- Notes will be dynamically added here -->
+        </tbody>
+      </table>
+    </div>
+    <footer>© 2024 - Developer Journal. All rights reserved.</footer>
+    <script>
+      const notesTable = document.getElementById("notes");
+      const savedNotes = JSON.parse(localStorage.getItem("notes")) || [];
+      let editingIndex = null;
+
+      function renderNotes() {
+        notesTable.innerHTML = "";
+        savedNotes.forEach((note, index) => {
+          const row = document.createElement("tr");
+
+          const titleCell = document.createElement("td");
+          titleCell.textContent = note.title;
+          row.appendChild(titleCell);
+
+          const detailsCell = document.createElement("td");
+          detailsCell.textContent = note.details;
+          row.appendChild(detailsCell);
+
+          const actionsCell = document.createElement("td");
+
+          // Modify button
+          const modifyButton = document.createElement("button");
+          modifyButton.textContent = "Modify";
+          modifyButton.className = "modify-button";
+          modifyButton.onclick = () => editNote(index);
+          actionsCell.appendChild(modifyButton);
+
+          // Delete button
+          const deleteButton = document.createElement("button");
+          deleteButton.textContent = "Delete";
+          deleteButton.className = "delete-button";
+          deleteButton.onclick = () => deleteNote(index);
+          actionsCell.appendChild(deleteButton);
+
+          row.appendChild(actionsCell);
+          notesTable.appendChild(row);
+        });
+      }
+
+      function addNote() {
+        const noteTitle = document.getElementById("note-title").value.trim();
+        const noteInput = document.getElementById("note-input").value.trim();
+
+        if (noteTitle === "" || noteInput === "") {
+          alert("Please enter both a title and details for your note!");
+          return;
+        }
+
+        if (editingIndex !== null) {
+          // If we are editing an existing note
+          savedNotes[editingIndex] = { title: noteTitle, details: noteInput };
+          editingIndex = null;
+        } else {
+          // Add a new note
+          savedNotes.push({ title: noteTitle, details: noteInput });
+        }
+
+        localStorage.setItem("notes", JSON.stringify(savedNotes));
+        document.getElementById("note-title").value = "";
+        document.getElementById("note-input").value = "";
+        renderNotes();
+      }
+
+      function deleteNote(index) {
+        savedNotes.splice(index, 1);
+        localStorage.setItem("notes", JSON.stringify(savedNotes));
+        renderNotes();
+      }
+
+      function editNote(index) {
+        const note = savedNotes[index];
+        document.getElementById("note-title").value = note.title;
+        document.getElementById("note-input").value = note.details;
+        editingIndex = index;
+      }
+
+      function toggleDarkMode() {
+        document.body.classList.toggle("dark-mode");
+        const darkMode = document.body.classList.contains("dark-mode");
+        localStorage.setItem("darkMode", darkMode);
+      }
+
+      // Check if dark mode was previously enabled
+      if (localStorage.getItem("darkMode") === "true") {
+        document.body.classList.add("dark-mode");
+      }
+
+      // Initial rendering of notes
+      renderNotes();
+    </script>
+  </body>
+</html>
